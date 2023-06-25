@@ -96,12 +96,47 @@ class User {
       })
 
       const db = getDb()
-      const updatedCart=await db.collection('users').updateOne({ _id: new mongoDb.ObjectId(this._id) }, { $set: { cart: { items: updatedCartItems } } })
+      const updatedCart = await db.collection('users').updateOne({ _id: new mongoDb.ObjectId(this._id) }, { $set: { cart: { items: updatedCartItems } } })
 
-      
+
     } catch (err) {
       console.log(err)
     }
+
+  }
+
+  async addOrder() {
+
+    try {
+      const db = getDb();
+
+      const cartProducts = await this.getCart();
+      const order = {
+        items: cartProducts,
+        user: {
+          _id: new mongoDb.ObjectId(this._id),
+          name: this.name
+        }
+      }
+      await db.collection('orders').insertOne(order);
+      await db.collection('users').updateOne({ _id: new mongoDb.ObjectId(this._id) }, { $set: { cart: { items: [] } } })
+
+    } catch (err) {
+      console.log(err)
+    }
+
+  }
+
+  async getOrders() {
+    try {
+      const db = getDb();
+      const orders=await db.collection('orders').find({'user._id':new mongoDb.ObjectId(this._id)}).toArray();
+      return orders;
+
+    } catch (err) {
+      console.log(err)
+    }
+  
 
   }
 
