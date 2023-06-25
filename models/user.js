@@ -40,9 +40,9 @@ class User {
       const updatedCartItems = [...this.cart.items]
       console.log(cartProductIndex)
 
-      if (cartProductIndex>=0) {
+      if (cartProductIndex >= 0) {
         newQuantity = this.cart.items[cartProductIndex].quantity + 1;
-        updatedCartItems[cartProductIndex].quantity = newQuantity ;
+        updatedCartItems[cartProductIndex].quantity = newQuantity;
 
       } else {
         updatedCartItems.push({
@@ -58,6 +58,47 @@ class User {
 
       await db.collection('users').updateOne({ _id: new mongoDb.ObjectId(this._id) }, { $set: { cart: updatedCart } })
 
+    } catch (err) {
+      console.log(err)
+    }
+
+  }
+
+  async getCart() {
+    try {
+
+      const prodIds = this.cart.items.map((product) => {
+        return product.productId;
+      })
+
+      const db = getDb();
+      const products = await db.collection('products').find({ _id: { $in: prodIds } }).toArray();
+      return products.map((product) => {
+        return {
+          ...product, quantity: this.cart.items.find((element) => {
+            return element.productId.toString() == product._id.toString()
+          }).quantity
+        }
+      })
+
+
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+
+  async deleteCartItem(productId) {
+    try {
+
+      const updatedCartItems = this.cart.items.filter((product) => {
+        return product.productId.toString() != productId.toString()
+      })
+
+      const db = getDb()
+      const updatedCart=await db.collection('users').updateOne({ _id: new mongoDb.ObjectId(this._id) }, { $set: { cart: { items: updatedCartItems } } })
+
+      
     } catch (err) {
       console.log(err)
     }
