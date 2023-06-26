@@ -1,3 +1,4 @@
+const product = require('../models/product');
 const Product = require('../models/product');
 const mongoDb = require('mongodb')
 
@@ -17,7 +18,14 @@ exports.postAddProduct = async (req, res, next) => {
     const imageUrl = req.body.imageUrl;
     const price = req.body.price;
     const description = req.body.description;
-    const product = new Product(title, price, description, imageUrl, null, req.user._id)
+
+    const product = new Product({
+      title:title,
+      price:price,
+      description:description,
+      imageUrl:imageUrl
+    })
+
     await product.save();
     console.log('Created Product');
     res.redirect('/admin/products');
@@ -70,26 +78,6 @@ exports.getEditProduct = async (req, res, next) => {
     console.log(err)
   }
 
-
-  // const editMode = req.query.edit;
-  // if (!editMode) {
-  //   return res.redirect('/');
-  // }
-  // const prodId = req.params.productId;
-  // Product.findById(prodId)
-  //   .then(product => {
-  //     if (!product) {
-  //       return res.redirect('/');
-  //     }
-  //     res.render('admin/edit-product', {
-  //       pageTitle: 'Edit Product',
-  //       path: '/admin/edit-product',
-  //       editing: editMode,
-  //       product: product
-  //     });
-  //   })
-  //   .catch(err => console.log(err));
-
 };
 
 exports.postEditProduct = async (req, res, next) => {
@@ -102,7 +90,12 @@ exports.postEditProduct = async (req, res, next) => {
     const updatedImageUrl = req.body.imageUrl;
     const updatedDesc = req.body.description;
 
-    const product = new Product(updatedTitle, updatedPrice, updatedDesc, updatedImageUrl, prodId, req.user._id)
+    const product = await Product.findById(prodId)
+
+    product.title=updatedTitle;
+    product.price=updatedPrice;
+    product.description=updatedDesc;
+    product.imageUrl=updatedImageUrl
 
     await product.save();
     console.log('UPDATED PRODUCT!');
@@ -114,20 +107,6 @@ exports.postEditProduct = async (req, res, next) => {
 
   }
 
-  // const prodId = req.body.productId;
-  // const updatedTitle = req.body.title;
-  // const updatedPrice = req.body.price;
-  // const updatedImageUrl = req.body.imageUrl;
-  // const updatedDesc = req.body.description;
-
-  // const product = new Product(updatedTitle, updatedPrice, updatedDesc, updatedImageUrl, prodId, req.user._id)
-
-  // product.save()
-  //   .then(result => {
-  //     console.log('UPDATED PRODUCT!');
-  //     res.redirect('/admin/products');
-  //   })
-  //   .catch(err => console.log(err));
 };
 
 
@@ -135,7 +114,7 @@ exports.getProducts = async (req, res, next) => {
 
   try {
     console.log('hey')
-    const products = await Product.fetchAll();
+    const products = await Product.find();
     res.render('admin/products', {
       prods: products,
       pageTitle: 'Admin Products',
@@ -145,37 +124,18 @@ exports.getProducts = async (req, res, next) => {
     console.log(err)
   }
 
-
-  // Product.fetchAll()
-  //   .then(products => {
-  //     res.render('admin/products', {
-  //       prods: products,
-  //       pageTitle: 'Admin Products',
-  //       path: '/admin/products'
-  //     });
-  //   })
-  //   .catch(err => console.log(err));
 };
 
 exports.postDeleteProduct = async (req, res, next) => {
 
   try {
     const prodId = req.body.productId;
-    await Product.deleteById(prodId)
+    await Product.findByIdAndRemove(prodId)
     console.log('DESTROYED PRODUCT');
     res.redirect('/admin/products');
   } catch (err) {
     console.log(err)
   }
-
-
-  // const prodId = req.body.productId;
-  // Product.deleteById(prodId)
-  //   .then(() => {
-  //     console.log('DESTROYED PRODUCT');
-  //     res.redirect('/admin/products');
-  //   })
-  //   .catch(err => console.log(err));
 
 
 };
