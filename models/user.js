@@ -58,7 +58,7 @@ userSchema.methods.addToCart=async function(product){
 
 userSchema.methods.deleteCartItem= async function (productId) {
 
-        try {
+    try {
     
           const updatedCartItems = this.cart.items.filter((product) => {
             return product.productId.toString() != productId.toString()
@@ -71,8 +71,20 @@ userSchema.methods.deleteCartItem= async function (productId) {
         } catch (err) {
           console.log(err)
         }
-    
-      }
+
+ }
+
+
+userSchema.methods.clearCart=async function(){
+    try{
+
+        this.cart={items:[]}
+        await this.save();
+
+    }catch(err){
+        console.log(err)
+    }
+}
 
 module.exports=mongoose.model('User',userSchema)
 
