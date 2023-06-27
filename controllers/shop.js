@@ -55,7 +55,9 @@ exports.getCart = async (req, res, next) => {
 
   try {
 
-    const products = await req.user.getCart();
+    const user = await req.user.populate('cart.items.productId');
+
+    const products=user.cart.items;
     console.log(products)
     res.render('shop/cart', {
       path: '/cart',
